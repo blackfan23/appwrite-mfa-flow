@@ -36,6 +36,5 @@ export class App {
 
   async logout() {
     await this.appwrite.deleteSession();
-    this.router.navigate(['/login']);
   }
 }

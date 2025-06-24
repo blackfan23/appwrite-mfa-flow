@@ -88,7 +88,10 @@ export class Appwrite {
     if (!this.account) {
       throw new Error('Appwrite account service is not initialized');
     }
-    return this.account.deleteSession(sessionId);
+    this.account.deleteSession(sessionId);
+    this.router.navigate(['/login']);
+    location.reload();
+    return;
   }
 
   async createMFAChallenge(factorType: AuthenticationFactor) {

@@ -1,4 +1,4 @@
-import { inject } from '@angular/core';
+import { inject, NgZone } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { AppwriteException } from 'appwrite';
 import { Appwrite } from '../services/appwrite';
@@ -6,6 +6,7 @@ import { Appwrite } from '../services/appwrite';
 export const AuthGuard: CanActivateFn = async (route, state) => {
   const router = inject(Router);
   const appwrite = inject(Appwrite);
+  const ngZone = inject(NgZone);
 
   try {
     const user = await appwrite.getCurrentUser();
@@ -17,7 +18,10 @@ export const AuthGuard: CanActivateFn = async (route, state) => {
     if (error instanceof AppwriteException) {
       console.error(error.type);
       if (error.type === 'user_more_factors_required') {
-        await router.navigate(['/mfa-verification']);
+        await ngZone.run(async () => {
+          await router.navigate(['/mfa-verification']);
+          location.reload();
+        });
         return false;
       }
     } else {
