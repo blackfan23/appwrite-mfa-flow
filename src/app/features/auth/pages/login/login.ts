@@ -1,27 +1,27 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-import { Auth } from '../../../../core/services/auth';
+import { ID } from 'appwrite';
+import { environment } from '../../../../../environments/environment';
+import { Appwrite } from '../../../../core/services/appwrite';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [
-    CommonModule, 
-    ReactiveFormsModule, 
-    RouterModule,
-    IonicModule
-  ],
+  imports: [CommonModule, ReactiveFormsModule, IonicModule],
   templateUrl: './login.html',
-  styleUrls: ['./login.scss']
+  styleUrls: ['./login.scss'],
 })
 export class Login {
-  private auth = inject(Auth);
   private fb = inject(FormBuilder);
-  private router = inject(Router);
-  
+  private appwrite = inject(Appwrite);
+
   loginForm: FormGroup;
   isLoading = false;
   error: string | null = null;
@@ -29,7 +29,10 @@ export class Login {
 
   constructor() {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]]
+      email: [
+        environment.appwrite.email,
+        [Validators.required, Validators.email],
+      ],
     });
   }
 
@@ -40,11 +43,15 @@ export class Login {
 
     this.isLoading = true;
     this.error = null;
-    
+
     try {
       const email = this.loginForm.get('email')?.value;
-      const success = await this.auth.loginWithMagicLink(email).toPromise();
-      
+      const success = await this.appwrite.createMagicURLSession(
+        ID.unique(),
+        email,
+        'http://localhost:4200/auth/callback'
+      );
+
       if (success) {
         this.emailSent = true;
       } else {

@@ -1,21 +1,30 @@
-import { Injectable, isDevMode } from '@angular/core';
-import { Client, Account, Databases } from 'appwrite';
+import { inject, Injectable, isDevMode } from '@angular/core';
+import { Router } from '@angular/router';
+import {
+  Account,
+  Client,
+  Databases,
+  type AuthenticationFactor,
+} from 'appwrite';
+import { environment } from '../../../environments/environment';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class Appwrite {
   private client: Client | null = null;
   public account: Account | null = null;
   public databases: Databases | null = null;
 
-  // Environment variables (will be replaced by Vite during build)
-  private readonly endpoint = import.meta.env['VITE_APPWRITE_ENDPOINT'] || '';
-  private readonly projectId = import.meta.env['VITE_APPWRITE_PROJECT_ID'] || '';
-  public readonly databaseId = import.meta.env['VITE_APPWRITE_DATABASE_ID'] || '';
-  public readonly usersCollection = import.meta.env['VITE_APPWRITE_USERS_COLLECTION'] || 'users';
-  public readonly sessionsCollection = import.meta.env['VITE_APPWRITE_SESSIONS_COLLECTION'] || 'sessions';
-  public readonly mfaCollection = import.meta.env['VITE_APPWRITE_MFA_COLLECTION'] || 'mfa_verifications';
+  private router = inject(Router);
+
+  // Environment variables from Angular environment files
+  private readonly endpoint = environment.appwrite.endpoint;
+  private readonly projectId = environment.appwrite.projectId;
+  public readonly databaseId = environment.appwrite.databaseId;
+  public readonly usersCollection = environment.appwrite.usersCollection;
+  public readonly sessionsCollection = environment.appwrite.sessionsCollection;
+  public readonly mfaCollection = environment.appwrite.mfaCollection;
 
   constructor() {
     this.initialize();
@@ -23,7 +32,9 @@ export class Appwrite {
 
   private initialize(): void {
     if (!this.endpoint || !this.projectId) {
-      console.error('Missing required Appwrite configuration. Please check your environment variables.');
+      console.error(
+        'Missing required Appwrite configuration. Please check your environment variables.'
+      );
       return;
     }
 
@@ -40,7 +51,7 @@ export class Appwrite {
         console.log('Appwrite initialized with config:', {
           endpoint: this.endpoint,
           projectId: this.projectId,
-          databaseId: this.databaseId
+          databaseId: this.databaseId,
         });
       }
     } catch (error) {
@@ -51,16 +62,9 @@ export class Appwrite {
   // Account methods
   async getCurrentUser() {
     if (!this.account) {
-      console.error('Appwrite account service is not initialized');
-      return null;
+      throw new Error('Appwrite account service is not initialized');
     }
-
-    try {
-      return await this.account.get();
-    } catch (error) {
-      console.error('Error getting current user:', error);
-      return null;
-    }
+    return await this.account.get();
   }
 
   // Authentication methods
@@ -69,7 +73,7 @@ export class Appwrite {
       throw new Error('Appwrite account service is not initialized');
     }
     // Using createSession with email for magic URL flow
-    return this.account.createSession(email, 'magic-link');
+    return this.account.createMagicURLToken(userId, email, url);
   }
 
   async updateMagicURLSession(userId: string, secret: string) {
@@ -77,13 +81,32 @@ export class Appwrite {
       throw new Error('Appwrite account service is not initialized');
     }
     // Using updateSession to verify the magic URL
-    return this.account.updateSession(userId);
+    return this.account.updateMagicURLSession(userId, secret);
   }
 
-  async deleteSession(sessionId: string) {
+  async deleteSession(sessionId: string = 'current') {
     if (!this.account) {
       throw new Error('Appwrite account service is not initialized');
     }
     return this.account.deleteSession(sessionId);
+  }
+
+  async createMFAChallenge(factorType: AuthenticationFactor) {
+    if (!this.account) {
+      throw new Error('Appwrite account service is not initialized');
+    }
+    return this.account.createMfaChallenge(factorType);
+  }
+
+  async updateMFAChallenge(challengeId: string, otp: string) {
+    if (!this.account) {
+      throw new Error('Appwrite account service is not initialized');
+    }
+    try {
+      // Use verifyMfaChallenge instead of updateMfaChallenge
+      return this.account.updateMfaChallenge(challengeId, otp);
+    } catch (error) {
+      throw error;
+    }
   }
 }

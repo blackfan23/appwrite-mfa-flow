@@ -13,6 +13,13 @@ export const routes: Routes = [
       import('./features/auth/pages/callback/callback').then((m) => m.Callback),
   },
   {
+    path: 'mfa-verification',
+    loadComponent: () =>
+      import('./features/auth/pages/mfa-verification/mfa-verification').then(
+        (m) => m.MfaVerificationComponent
+      ),
+  },
+  {
     path: 'dashboard',
     loadComponent: () =>
       import('./features/dashboard/pages/dashboard/dashboard').then(

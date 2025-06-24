@@ -1,26 +1,20 @@
-import { Component, inject } from '@angular/core';
-import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { IonicModule, Platform } from '@ionic/angular';
-import { Auth } from './core/services/auth';
+import { Appwrite } from './core/services/appwrite';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterOutlet,
-    RouterLink,
-    RouterLinkActive,
-    IonicModule
-  ],
+  imports: [CommonModule, RouterLink, IonicModule],
   templateUrl: './app.html',
-  styleUrl: './app.scss'
+  styleUrl: './app.scss',
 })
 export class App {
   private platform = inject(Platform);
   private router = inject(Router);
-  private auth = inject(Auth);
+  private appwrite = inject(Appwrite);
 
   public appPages = [
     { title: 'Dashboard', url: '/dashboard', icon: 'home' },
@@ -41,7 +35,7 @@ export class App {
   }
 
   async logout() {
-    await this.auth.logout();
+    await this.appwrite.deleteSession();
     this.router.navigate(['/login']);
   }
 }

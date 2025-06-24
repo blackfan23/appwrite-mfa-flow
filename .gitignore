@@ -42,6 +42,8 @@ testem.log
 Thumbs.db
 
 # Environment variables
+environment.ts
+environment.prod.ts
 .env
 .env.*
 !.env.example

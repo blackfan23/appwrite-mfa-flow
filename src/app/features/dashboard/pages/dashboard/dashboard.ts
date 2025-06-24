@@ -1,30 +1,26 @@
-import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { IonicModule } from '@ionic/angular';
-import { Auth } from '../../../../core/services/auth';
+import { Appwrite } from '../../../../core/services/appwrite';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    RouterModule,
-    IonicModule
-  ],
+  imports: [CommonModule, RouterModule, IonicModule],
   templateUrl: './dashboard.html',
-  styleUrls: ['./dashboard.scss']
+  styleUrls: ['./dashboard.scss'],
 })
 export class Dashboard {
-  private auth = inject(Auth);
+  private appwrite = inject(Appwrite);
   private router = inject(Router);
-  
+
   user: any = null;
   isLoading = true;
 
   async ngOnInit() {
     try {
-      this.user = await this.auth.getCurrentUser();
+      this.user = await this.appwrite.getCurrentUser();
     } catch (error) {
       console.error('Error loading user:', error);
     } finally {
@@ -33,7 +29,7 @@ export class Dashboard {
   }
 
   async logout() {
-    await this.auth.logout();
+    await this.appwrite.deleteSession();
     this.router.navigate(['/login']);
   }
 }
