@@ -80,8 +80,18 @@ export class Appwrite {
     if (!this.account) {
       throw new Error('Appwrite account service is not initialized');
     }
-    // Using updateSession to verify the magic URL
-    return this.account.updateMagicURLSession(userId, secret);
+    try {
+      // Complete the magic URL session
+      const session = await this.account.updateMagicURLSession(userId, secret);
+      // Add a small delay to ensure session is properly established
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      // Verify the session is active before proceeding
+      await this.account.get();
+      return session;
+    } catch (error) {
+      console.error('Magic URL session update failed:', error);
+      throw error;
+    }
   }
 
   async deleteSession(sessionId: string = 'current') {
@@ -98,17 +108,37 @@ export class Appwrite {
     if (!this.account) {
       throw new Error('Appwrite account service is not initialized');
     }
-    return this.account.createMfaChallenge(factorType);
+    try {
+      // Add a small delay to ensure session is stable
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      return await this.account.createMfaChallenge(factorType);
+    } catch (error) {
+      console.error('MFA Challenge creation failed:', error);
+      throw error;
+    }
   }
 
+  async getMFAFactors() {
+    if (!this.account) {
+      throw new Error('Appwrite account service is not initialized');
+    }
+    return await this.account.listMfaFactors();
+  }
   async updateMFAChallenge(challengeId: string, otp: string) {
     if (!this.account) {
       throw new Error('Appwrite account service is not initialized');
     }
     try {
-      // Use verifyMfaChallenge instead of updateMfaChallenge
-      return this.account.updateMfaChallenge(challengeId, otp);
+      // Log current MFA status for debugging
+      const factors = await this.getMFAFactors();
+      console.log('Current MFA factors:', factors);
+      const result = await this.account.updateMfaChallenge(challengeId, otp);
+      // Verify session after MFA completion
+      const user = await this.account.get();
+      console.log('User after MFA:', user);
+      return result;
     } catch (error) {
+      console.error('MFA Challenge update failed:', error);
       throw error;
     }
   }

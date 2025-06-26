@@ -141,7 +141,6 @@ export class MfaVerificationComponent implements OnInit, OnDestroy {
         this.error =
           error.message || 'Failed to verify code. Please try again.';
         if (
-          error.code === 401 ||
           error.message?.includes('challenge') ||
           error.message?.includes('expired')
         ) {
