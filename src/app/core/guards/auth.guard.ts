@@ -18,9 +18,9 @@ export const AuthGuard: CanActivateFn = async (route, state) => {
     if (error instanceof AppwriteException) {
       console.error(error.type);
       if (error.type === 'user_more_factors_required') {
+        console.error('MFA required, reloading');
         await ngZone.run(async () => {
           await router.navigate(['/mfa-verification']);
-          location.reload();
         });
         return false;
       }

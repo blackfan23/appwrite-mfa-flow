@@ -1,6 +1,8 @@
 // This is an example environment file. Copy this file to environment.ts and environment.prod.ts
 // and replace the placeholder values with your actual configuration.
 
+// file is called environment.ts
+
 export const environment = {
   production: false,
   appwrite: {
