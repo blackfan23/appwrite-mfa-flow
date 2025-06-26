@@ -16,9 +16,6 @@ export const environment = {
     databaseId: 'YOUR_APPWRITE_DATABASE_ID',
 
     // Collection names (you can keep these defaults or change them to match your setup)
-    usersCollection: 'users',
-    sessionsCollection: 'sessions',
-    mfaCollection: 'mfa_verifications',
     email: 'YOUR_APPWRITE_EMAIL',
   },
 };
